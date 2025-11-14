@@ -1,0 +1,20 @@
+Nama: Gabriel Beriman Sigalingging
+
+
+URL Deployment: https://gaba-pro.github.io/story-catalog/
+
+
+Fitur PWA yang diimplementasikan:
+1. ✅ Push Notification - dengan VAPID keys, dynamic content, toggle subscription, action navigation
+2. ✅ Web App Manifest - dengan installable features, screenshots, shortcuts, theme
+3. ✅ Service Worker - dengan caching strategy untuk offline support
+4. ✅ IndexedDB - dengan CRUD operations, search/filter/sort, offline sync
+5. ✅ Offline Support - aplikasi dapat digunakan tanpa koneksi internet
+6. ✅ Background Sync - data offline akan disinkronisasi saat online kembali
+
+Kriteria submission terpenuhi:
+- Mempertahankan seluruh kriteria wajib submission sebelumnya ✅
+- Menerapkan Push Notification (Advanced level) ✅
+- Implementasi PWA dengan dukungan instalasi dan mode offline (Advanced level) ✅
+- Penerapan IndexedDB dengan sync offline-online (Advanced level) ✅
+- Distribusi secara publik (akan dilakukan) 🔄

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Aplikasi katalog cerita digital dengan peta interaktif untuk berbagi dan menjelajahi cerita dari berbagai lokasi">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2196F3">
+    <meta name="msapplication-TileColor" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Story Catalog">
+    
+
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="/images/icon-192x192.svg" />
+  <link rel="apple-touch-icon" href="/images/icon-192x192.svg" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/images/icon-512x512.png" />
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+    
+    <title>Story Catalog - Aplikasi Katalog Cerita Digital</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- View Transitions API Support -->
+    <meta name="view-transition" content="same-origin" />
+    
+    <script type="module" src="/scripts/index.js"></script>
+  </head>
+  <body>
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content" aria-label="Lewati ke konten utama">
+      Lewati ke konten utama
+    </a>
+    
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="loading-indicator" aria-hidden="true">
+      <div class="spinner"></div>
+      <span>Memuat...</span>
+    </div>
+
+    <header role="banner">
+      <div class="main-header container">
+        <a class="brand-name" href="#/" aria-label="Story Catalog - Halaman beranda">
+          <span class="brand-text">Story Catalog</span>
+        </a>
+
+        <nav id="navigation-drawer" class="navigation-drawer" role="navigation" aria-label="Menu navigasi utama">
+          <ul id="nav-list" class="nav-list" role="menubar">
+            <li role="none"><a href="#/" role="menuitem" tabindex="0">🏠 Beranda</a></li>
+            <li role="none"><a href="#/stories" role="menuitem" tabindex="0">📚 Cerita</a></li>
+            <li role="none"><a href="#/favorites" role="menuitem" tabindex="0">❤️ Favorit</a></li>
+            <li role="none"><a href="#/add-story" role="menuitem" tabindex="0">➕ Tambah Cerita</a></li>
+            <li role="none"><a href="#/login" role="menuitem" tabindex="0">🔐 Masuk</a></li>
+            <li role="none"><a href="#/register" role="menuitem" tabindex="0">📝 Daftar</a></li>
+            <li role="none"><a href="#/test" role="menuitem" tabindex="0">🔧 Test API</a></li>
+            <li role="none"><a href="#/about" role="menuitem" tabindex="0">ℹ️ Tentang</a></li>
+          </ul>
+        </nav>
+
+        <button id="drawer-button" class="drawer-button" aria-label="Buka menu navigasi" aria-expanded="false">
+          <span class="hamburger-icon"></span>
+          <span class="sr-only">Menu</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content" class="main-content" role="main" tabindex="-1">
+      <!-- Fallback content during initialization -->
+      <div id="initialization-status" style="padding: 2rem; text-align: center; background: #f0f0f0; margin: 1rem; border-radius: 8px;">
+        <p>🔄 Inisialisasi aplikasi...</p>
+        <p><small>Jika halaman tidak muncul dalam beberapa detik, silakan refresh halaman.</small></p>
+      </div>
+    </main>
+    
+    <footer role="contentinfo" class="main-footer">
+      <div class="container">
+        <p>&copy; 2024 Story Catalog. Aplikasi katalog cerita digital.</p>
+      </div>
+    </footer>
+  </body>
+</html>
