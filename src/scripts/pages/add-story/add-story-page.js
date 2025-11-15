@@ -28,19 +28,26 @@ class AddStoryPresenter extends BasePresenter {
   }
 
   async initMap() {
-    try {
-      this.mapService = new MapService('location-map');
-      await this.mapService.initMap();
-
-      // Set up click handler for location selection
-      this.mapService.onClick((lat, lon) => {
-        this.selectLocation(lat, lon);
-      });
-    } catch (error) {
-      console.error('Failed to initialize map:', error);
-      this.showError('Gagal memuat peta');
+  try {
+    // Reset existing map instance if any
+    if (this.mapService) {
+      this.mapService.reset();
     }
+
+    this.mapService = new MapService('location-map');
+    await this.mapService.initMap();
+
+    // Set up click handler for location selection
+    this.mapService.onClick((lat, lon) => {
+      this.selectLocation(lat, lon);
+    });
+
+    console.log('Map initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize map:', error);
+    this.showError('Gagal memuat peta');
   }
+}
 
   initCamera() {
     this.cameraService = new CameraService();
@@ -212,10 +219,8 @@ class AddStoryPresenter extends BasePresenter {
             this.hideLoading();
             this.showSuccess('Cerita berhasil ditambahkan!');
             
-            // Trigger push notification simulation
-            if (window.pushNotificationService) {
-              window.pushNotificationService.simulateNewStoryNotification(storyData);
-            }
+            // Trigger push notification simulation - WITH PROPER ERROR HANDLING
+            this.showLocalNotification(storyData);
             
             setTimeout(() => {
               window.location.hash = '#/stories';
@@ -231,26 +236,85 @@ class AddStoryPresenter extends BasePresenter {
       }
 
       // Offline mode or online submission failed
-      if (window.syncService) {
-        try {
-          await window.syncService.addStoryOffline(storyData);
-          this.hideLoading();
-          this.showSuccess('Cerita disimpan offline! Akan disinkronisasi saat koneksi kembali.');
-          setTimeout(() => {
-            window.location.hash = '#/stories';
-          }, 2000);
-        } catch (offlineError) {
-          this.hideLoading();
-          this.showError('Gagal menyimpan cerita: ' + offlineError.message);
-        }
-      } else {
-        this.hideLoading();
-        this.showError('Service offline tidak tersedia. Coba lagi saat online.');
-      }
+      await this.handleOfflineSubmission(storyData);
 
     } catch (error) {
       this.hideLoading();
       this.showError('Terjadi kesalahan: ' + error.message);
+    }
+  }
+
+  // Handle offline submission
+  async handleOfflineSubmission(storyData) {
+    try {
+      if (window.syncService && typeof window.syncService.addStoryOffline === 'function') {
+        await window.syncService.addStoryOffline(storyData);
+        this.hideLoading();
+        this.showSuccess('Cerita disimpan offline! Akan disinkronisasi saat koneksi kembali.');
+        
+        // Show local notification for offline save
+        this.showLocalNotification({
+          ...storyData,
+          name: storyData.name + ' (Offline)'
+        });
+        
+        setTimeout(() => {
+          window.location.hash = '#/stories';
+        }, 2000);
+      } else {
+        throw new Error('Service offline tidak tersedia');
+      }
+    } catch (offlineError) {
+      this.hideLoading();
+      this.showError('Gagal menyimpan cerita: ' + offlineError.message);
+    }
+  }
+
+  // Show local notification with proper error handling
+  showLocalNotification(storyData) {
+    try {
+      console.log('📢 Attempting to show local notification...');
+      
+      // Check if push notification service is available and has the method
+      if (window.pushNotificationService) {
+        // Check if the method exists
+        if (typeof window.pushNotificationService.simulateNewStoryNotification === 'function') {
+          window.pushNotificationService.simulateNewStoryNotification(storyData);
+          return;
+        } 
+        // Check for alternative method name
+        else if (typeof window.pushNotificationService.showLocalNotification === 'function') {
+          window.pushNotificationService.showLocalNotification(
+            'Cerita Baru Ditambahkan',
+            storyData.description,
+            { id: storyData.id || Date.now().toString() }
+          );
+          return;
+        }
+      }
+      
+      // Fallback: Direct browser notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const notification = new Notification('📖 Cerita Baru Ditambahkan', {
+          body: storyData.description.substring(0, 100) + '...',
+          icon: '/images/icon-192x192.svg',
+          tag: 'new-story'
+        });
+        
+        notification.onclick = () => {
+          window.focus();
+          window.location.hash = '#/stories';
+          notification.close();
+        };
+        
+        console.log('✅ Local notification shown successfully');
+      } else {
+        console.log('ℹ️ Notification not available or permission not granted');
+      }
+      
+    } catch (notificationError) {
+      console.warn('⚠️ Failed to show local notification:', notificationError);
+      // Don't fail the whole process if notification fails
     }
   }
 }
@@ -409,6 +473,7 @@ class AddStoryPage extends BasePage {
 
   async afterRender() {
     await super.afterRender();
+    await this.presenter.init();
   }
 
   updateImagePreview(file) {

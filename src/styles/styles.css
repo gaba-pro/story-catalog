@@ -1817,3 +1817,150 @@ header {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
+
+/* PWA Buttons - Kanan Bawah */
+.pwa-button {
+  position: fixed;
+  right: 20px;
+  z-index: 1000;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+  color: white !important;
+}
+
+.pwa-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.pwa-button:active {
+  transform: translateY(0);
+}
+
+/* Install Button */
+.install-btn {
+  bottom: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.install-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Notification Button */
+.notification-btn {
+  bottom: 80px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.notification-btn:hover {
+  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+}
+
+.notification-btn.active {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+}
+
+.notification-btn.active:hover {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+}
+
+.notification-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  background: #6c757d !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pwa-button {
+    right: 10px;
+    bottom: 10px;
+    font-size: 12px;
+    padding: 10px 14px;
+    min-width: 120px;
+  }
+  
+  .notification-btn {
+    bottom: 70px;
+  }
+  
+  .install-btn {
+    bottom: 10px;
+  }
+}
+
+/* Global Message Styles */
+.global-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  z-index: 1001;
+  transition: transform 0.3s ease;
+  max-width: 90%;
+  text-align: center;
+}
+
+.global-message.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.global-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.global-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.global-message.info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.global-message.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+/* Pastikan tombol notification tidak disabled secara default */
+.notification-btn {
+  bottom: 80px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  opacity: 1 !important; /* Pastikan tidak transparan */
+  cursor: pointer !important;
+}
+
+/* Hanya disable ketika benar-benar disabled */
+.notification-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  background: #6c757d !important;
+}

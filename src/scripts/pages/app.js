@@ -22,6 +22,10 @@ class App {
       const isOpen = this.#navigationDrawer.classList.contains('open');
       this.#navigationDrawer.classList.toggle('open');
       this.#drawerButton.setAttribute('aria-expanded', (!isOpen).toString());
+      
+      // Announce drawer state for screen readers
+      const announcement = isOpen ? 'Navigation drawer closed' : 'Navigation drawer opened';
+      this.#announceToScreenReader(announcement);
     };
 
     this.#drawerButton.addEventListener('click', toggleDrawer);
@@ -57,6 +61,7 @@ class App {
         this.#navigationDrawer.classList.remove('open');
         this.#drawerButton.setAttribute('aria-expanded', 'false');
         this.#drawerButton.focus();
+        this.#announceToScreenReader('Navigation drawer closed');
       }
     });
   }
@@ -89,6 +94,20 @@ class App {
         }
       });
     });
+  }
+
+  #announceToScreenReader(message) {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.className = 'sr-only';
+    announcement.textContent = message;
+    
+    document.body.appendChild(announcement);
+    
+    setTimeout(() => {
+      document.body.removeChild(announcement);
+    }, 1000);
   }
 
   async renderPage() {
@@ -138,6 +157,7 @@ class App {
         this.#content.innerHTML = content;
         
         // Focus main content for screen readers
+        this.#content.setAttribute('tabindex', '-1');
         this.#content.focus();
         
         await page.afterRender();

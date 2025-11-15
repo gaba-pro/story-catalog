@@ -65,38 +65,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle API requests to Story API
+  // Handle API requests
   if (url.origin === 'https://story-api.dicoding.dev') {
     event.respondWith(
       caches.open(DYNAMIC_CACHE).then((cache) => {
         return fetch(request)
           .then((response) => {
-            // Only cache successful responses
+            // Cache successful responses
             if (response.status === 200) {
-              // Clone the response before caching
-              const responseToCache = response.clone();
-              cache.put(request, responseToCache).catch(error => {
-                console.warn('Failed to cache API response:', error);
-              });
+              cache.put(request, response.clone());
             }
             return response;
           })
           .catch(() => {
             // Return cached response when offline
-            return cache.match(request).then(cachedResponse => {
-              if (cachedResponse) {
-                console.log('Serving cached API response for:', request.url);
-                return cachedResponse;
-              }
-              // Return offline fallback for API calls
-              return new Response(JSON.stringify({
-                error: true,
-                message: 'You are offline. Please check your connection.'
-              }), {
-                status: 503,
-                headers: { 'Content-Type': 'application/json' }
-              });
-            });
+            return cache.match(request);
           });
       })
     );
@@ -107,13 +90,11 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // Only cache same-origin successful responses
+        // Cache dynamic content for same-origin requests
         if (request.url.startsWith(self.location.origin) && response.status === 200) {
           const responseClone = response.clone();
           caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put(request, responseClone).catch(error => {
-              console.warn('Failed to cache response:', error);
-            });
+            cache.put(request, responseClone);
           });
         }
         return response;
@@ -125,24 +106,20 @@ self.addEventListener('fetch', (event) => {
             if (response) {
               return response;
             }
-            
             // Fallback to index.html for navigation requests
-            if (request.destination === 'document' || request.headers.get('accept')?.includes('text/html')) {
+            if (request.destination === 'document') {
               return caches.match('/index.html');
             }
-            
-            // Return simple offline message for other requests
             return new Response('Offline - No cached content available', {
               status: 503,
-              statusText: 'Service Unavailable',
-              headers: { 'Content-Type': 'text/plain' }
+              statusText: 'Service Unavailable'
             });
           });
       })
   );
 });
 
-// Push event - handle incoming push notifications
+// Push event - handle incoming push notifications (sesuai instruksi reviewer)
 self.addEventListener('push', (event) => {
   console.log('Service worker pushing...');
   

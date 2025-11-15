@@ -5,7 +5,10 @@ import ApiService from './api-service.js';
 class SyncService {
   constructor() {
     this.indexedDBService = new IndexedDBService();
-    this.apiService = new ApiService();
+    
+    // ApiService sudah di-import sebagai instance, bukan class
+    this.apiService = ApiService; // Langsung gunakan instance
+    
     this.isOnline = navigator.onLine;
     this.syncInProgress = false;
     this.syncListeners = [];
@@ -17,7 +20,7 @@ class SyncService {
   async initialize() {
     try {
       await this.indexedDBService.initialize();
-      console.log('Sync service initialized');
+      console.log('✅ Sync service initialized');
       
       // Start sync if online
       if (this.isOnline) {
@@ -26,21 +29,21 @@ class SyncService {
       
       return true;
     } catch (error) {
-      console.error('Failed to initialize sync service:', error);
+      console.error('❌ Failed to initialize sync service:', error);
       return false;
     }
   }
 
   setupOnlineListeners() {
     window.addEventListener('online', () => {
-      console.log('Connection restored - starting sync');
+      console.log('🌐 Connection restored - starting sync');
       this.isOnline = true;
       this.notifyListeners('online');
       this.syncOfflineData();
     });
 
     window.addEventListener('offline', () => {
-      console.log('Connection lost - entering offline mode');
+      console.log('📴 Connection lost - entering offline mode');
       this.isOnline = false;
       this.notifyListeners('offline');
     });
@@ -83,7 +86,7 @@ class SyncService {
     this.notifyListeners('sync-start');
 
     try {
-      console.log('Starting offline data synchronization...');
+      console.log('🔄 Starting offline data synchronization...');
       
       // Get offline stories
       const offlineStories = await this.indexedDBService.getOfflineStories();
@@ -126,13 +129,13 @@ class SyncService {
         totalProcessed: offlineStories.length + syncQueue.length
       };
 
-      console.log('Sync completed:', result);
+      console.log('✅ Sync completed:', result);
       this.notifyListeners('sync-complete', result);
 
       return result;
 
     } catch (error) {
-      console.error('Sync process failed:', error);
+      console.error('❌ Sync process failed:', error);
       this.notifyListeners('sync-error', error);
       throw error;
     } finally {
@@ -143,14 +146,14 @@ class SyncService {
   // Sync individual offline story
   async syncOfflineStory(offlineStory) {
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No authentication token available');
+      // Check if user is authenticated
+      if (!this.apiService.isAuthenticated()) {
+        throw new Error('User not authenticated');
       }
 
       // Prepare story data for API
-      const storyData = new FormData();
-      storyData.append('description', offlineStory.description);
+      const formData = new FormData();
+      formData.append('description', offlineStory.description);
       
       // Handle photo - if it's a base64 string, convert it to blob
       if (offlineStory.photo) {
@@ -164,18 +167,18 @@ class SyncService {
         }
         
         if (photoBlob) {
-          storyData.append('photo', photoBlob, offlineStory.photoName || 'story-photo.jpg');
+          formData.append('photo', photoBlob, offlineStory.photoName || 'story-photo.jpg');
         }
       }
 
       // Add location if available
       if (offlineStory.lat && offlineStory.lon) {
-        storyData.append('lat', offlineStory.lat.toString());
-        storyData.append('lon', offlineStory.lon.toString());
+        formData.append('lat', offlineStory.lat.toString());
+        formData.append('lon', offlineStory.lon.toString());
       }
 
-      // Send to API
-      const response = await this.apiService.addStory(storyData);
+      // Send to API using the ApiService instance
+      const response = await this.apiService.addStory(formData);
       
       if (response.error === false) {
         // Mark as synced
@@ -186,14 +189,14 @@ class SyncService {
           await this.indexedDBService.addStory(response.story);
         }
         
-        console.log('Offline story synced successfully:', offlineStory.tempId);
+        console.log('✅ Offline story synced successfully:', offlineStory.tempId);
         return response;
       } else {
         throw new Error(response.message || 'Failed to sync story');
       }
 
     } catch (error) {
-      console.error('Failed to sync offline story:', error);
+      console.error('❌ Failed to sync offline story:', error);
       
       // Update retry count
       offlineStory.retryCount = (offlineStory.retryCount || 0) + 1;
@@ -206,11 +209,7 @@ class SyncService {
       }
       
       // Update in IndexedDB
-      await this.indexedDBService.performOperation(
-        this.indexedDBService.stores.OFFLINE_STORIES, 
-        'put', 
-        offlineStory
-      );
+      await this.indexedDBService.updateOfflineStory(offlineStory.tempId, offlineStory);
       
       throw error;
     }
@@ -223,9 +222,11 @@ class SyncService {
         return await this.syncOfflineStory(queueItem.data);
       case 'update':
         // Handle story updates if needed
+        console.log('Update action not implemented yet');
         break;
       case 'delete':
         // Handle story deletions if needed
+        console.log('Delete action not implemented yet');
         break;
       default:
         console.warn('Unknown sync queue action:', queueItem.action);
@@ -235,13 +236,12 @@ class SyncService {
   // Update cached stories with latest data from API
   async updateCachedStories() {
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        console.log('No auth token, skipping cached stories update');
+      if (!this.apiService.isAuthenticated()) {
+        console.log('User not authenticated, skipping cached stories update');
         return;
       }
 
-      console.log('Updating cached stories...');
+      console.log('📥 Updating cached stories from API...');
       
       // Get latest stories from API
       const response = await this.apiService.getStories();
@@ -254,18 +254,18 @@ class SyncService {
           await this.indexedDBService.addStory(story);
         }
         
-        console.log(`Cached ${response.listStory.length} stories`);
+        console.log(`✅ Cached ${response.listStory.length} stories`);
       }
 
     } catch (error) {
-      console.error('Failed to update cached stories:', error);
+      console.error('❌ Failed to update cached stories:', error);
     }
   }
 
   // Add story to offline queue when offline
   async addStoryOffline(storyData) {
     try {
-      console.log('Adding story to offline queue...');
+      console.log('💾 Adding story to offline queue...');
       
       // Store photo as base64 for offline storage
       if (storyData.photo instanceof File) {
@@ -276,11 +276,11 @@ class SyncService {
       // Add to offline stories
       const offlineStory = await this.indexedDBService.addOfflineStory(storyData);
       
-      console.log('Story added to offline queue:', offlineStory);
+      console.log('✅ Story added to offline queue:', offlineStory.tempId);
       return offlineStory;
 
     } catch (error) {
-      console.error('Failed to add story to offline queue:', error);
+      console.error('❌ Failed to add story to offline queue:', error);
       throw error;
     }
   }
@@ -303,7 +303,7 @@ class SyncService {
         try {
           await this.updateCachedStories();
         } catch (error) {
-          console.warn('Failed to refresh from API, using cached data');
+          console.warn('⚠️ Failed to refresh from API, using cached data');
         }
       }
 
@@ -332,13 +332,13 @@ class SyncService {
       return allStories;
 
     } catch (error) {
-      console.error('Failed to get stories:', error);
+      console.error('❌ Failed to get stories:', error);
       return [];
     }
   }
 
   // Force manual sync
-  async forcSync() {
+  async forceSync() {
     if (!this.isOnline) {
       throw new Error('Device is offline. Cannot sync.');
     }
@@ -375,11 +375,11 @@ class SyncService {
   async clearOfflineData() {
     try {
       await this.indexedDBService.clearAllData();
-      console.log('All offline data cleared');
+      console.log('✅ All offline data cleared');
       this.notifyListeners('data-cleared');
       return true;
     } catch (error) {
-      console.error('Failed to clear offline data:', error);
+      console.error('❌ Failed to clear offline data:', error);
       return false;
     }
   }

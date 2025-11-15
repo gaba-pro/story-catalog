@@ -12,13 +12,18 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'src', 'index.html'),
-        sw: resolve(__dirname, 'src', 'sw.js')
+        sw: resolve(__dirname, 'src', 'sw.js') // Pastikan path ini benar
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === 'sw' ? 'sw.js' : 'assets/[name]-[hash].js';
+          return chunkInfo.name === 'sw' ? '[name].js' : 'assets/[name]-[hash].js';
         }
       }
+    }
+  },
+  server: {
+    headers: {
+      'Service-Worker-Allowed': '/'
     }
   },
   resolve: {

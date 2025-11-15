@@ -10,10 +10,31 @@ class MapService {
     this.activeMarkerId = null;
     this.layerControl = null;
     this.tileLayers = {};
+    this.tempMarker = null;
   }
 
   async initMap(center = MAP_CONFIG.DEFAULT_CENTER, zoom = MAP_CONFIG.DEFAULT_ZOOM) {
     try {
+      const container = document.getElementById(this.containerId);
+      
+      if (!container) {
+        throw new Error(`Map container with id '${this.containerId}' not found`);
+      }
+
+      // Check if map is already initialized
+      if (this.map) {
+        console.log('Map already initialized, reusing existing instance');
+        return this.map;
+      }
+
+      // Check if container already has a map instance
+      if (container._leaflet_id) {
+        console.log('Container already has a map, removing existing instance');
+        // Remove existing map from container
+        container._leaflet_id = null;
+        container.innerHTML = '';
+      }
+
       // Initialize the map
       this.map = L.map(this.containerId, {
         center: center,
@@ -45,6 +66,7 @@ class MapService {
       // Setup keyboard accessibility
       this.setupAccessibility();
 
+      console.log('Map initialized successfully');
       return this.map;
     } catch (error) {
       console.error('Failed to initialize map:', error);
@@ -274,17 +296,23 @@ class MapService {
   }
 
   setView(lat, lon, zoom = MAP_CONFIG.DEFAULT_ZOOM) {
-    this.map.setView([lat, lon], zoom);
+    if (this.map) {
+      this.map.setView([lat, lon], zoom);
+    }
   }
 
   onClick(callback) {
-    this.map.on('click', (e) => {
-      const { lat, lng } = e.latlng;
-      callback(lat, lng);
-    });
+    if (this.map) {
+      this.map.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        callback(lat, lng);
+      });
+    }
   }
 
   addTemporaryMarker(lat, lon) {
+    if (!this.map) return null;
+
     // Remove existing temporary marker
     if (this.tempMarker) {
       this.map.removeLayer(this.tempMarker);
@@ -306,18 +334,30 @@ class MapService {
   }
 
   removeTemporaryMarker() {
-    if (this.tempMarker) {
+    if (this.tempMarker && this.map) {
       this.map.removeLayer(this.tempMarker);
       this.tempMarker = null;
     }
   }
 
-  destroy() {
+  // Check if map is initialized
+  isInitialized() {
+    return this.map !== null;
+  }
+
+  // Reset map instance
+  reset() {
     if (this.map) {
       this.map.remove();
       this.map = null;
       this.markers.clear();
+      this.tempMarker = null;
+      this.activeMarkerId = null;
     }
+  }
+
+  destroy() {
+    this.reset();
   }
 }
 

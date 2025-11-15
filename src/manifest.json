@@ -13,15 +13,15 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
+      "src": "/images/icon-192x192.svg",
+      "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/public/images/icon-192x192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
+      "src": "/images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
@@ -34,8 +34,8 @@
       "url": "/#/add-story",
       "icons": [
         {
-          "src": "/favicon.svg",
-          "sizes": "any",
+          "src": "/images/icon-192x192.svg",
+          "sizes": "192x192",
           "type": "image/svg+xml"
         }
       ]
@@ -47,8 +47,8 @@
       "url": "/#/stories",
       "icons": [
         {
-          "src": "/favicon.svg",
-          "sizes": "any",
+          "src": "/images/icon-192x192.svg",
+          "sizes": "192x192",
           "type": "image/svg+xml"
         }
       ]
@@ -60,25 +60,13 @@
       "url": "/#/favorites",
       "icons": [
         {
-          "src": "/favicon.svg",
-          "sizes": "any",
+          "src": "/images/icon-192x192.svg",
+          "sizes": "192x192",
           "type": "image/svg+xml"
         }
       ]
     }
   ],
   "prefer_related_applications": false,
-  "related_applications": [],
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "protocol_handlers": [
-    {
-      "protocol": "web+storycatalog",
-      "url": "/#/story?id=%s"
-    }
-  ],
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  "related_applications": []
 }
